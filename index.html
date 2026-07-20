@@ -1,9 +1,75 @@
+
+昨日 23:08
+
+手取り_家計管理_円グラフ_項目追加対応(1).xlsx
+スプレッドシート
+こんな感じの家計管理アプリを作ってほしい
+
+
+体重管理.xlsx
+スプレッドシート
+これのwebアプリ版を作って
+
+image(49).png
+image(50).png
+
+image(51).png
+保存できない
+
+Firebase設定を埋め込み、メールアドレスとパスワードだけで使える版に修正しました。
+
+index.html
+
+ZIP版をダウンロード
+
+GitHubへの反映方法
+現在GitHubにあるHTMLを削除または置き換えて、今回の index.html をリポジトリ直下へアップロードしてください。
+
+kakeiboapp
+└─ index.html
+アップロード後、数分待って次のURLを再読み込みします。
+
+https://tanpopowatage.github.io/kakeiboapp/
+変更点は次のとおりです。
+
+Firebase設定JSONの入力欄を削除
+
+Firebase設定をアプリ内へ組み込み
+
+メールアドレスとパスワードだけで新規登録・ログイン
+
+ログイン後は入力内容を自動でクラウド保存
+
+「今のデータを保存」ボタンを追加
+
+「クラウドから取得」ボタンを追加
+
+Firebaseのエラーを日本語で表示
+
+Firebase側では別途、次の2つを有効にしてください。
+
+Authentication
+→ Sign-in method
+→ メール / パスワードを有効化
+Firestore Database
+→ データベースを作成
+Firestoreのルールは、ユーザー本人のデータだけを読み書きできる次の設定がおすすめです。
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+  }
+}
 <!doctype html>
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MONEY NOTE - 家計管理</title>
-<!-- v2.1: password-manager false-positive fix -->
 <style>
 :root{--bg:#f4f7fb;--panel:#fff;--ink:#172033;--muted:#778198;--line:#e5eaf2;--accent:#5468ff;--good:#1aa67a;--bad:#e25454;--shadow:0 14px 35px rgba(30,48,90,.08)}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,"Noto Sans JP",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink)}button,input,select{font:inherit}button{cursor:pointer}.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}aside{background:#172033;color:#fff;padding:28px 20px;position:sticky;top:0;height:100vh}.brand{font-size:21px;font-weight:800;margin-bottom:30px}.brand small{display:block;font-size:11px;font-weight:500;color:#9da8c3;margin-top:5px}.nav{display:grid;gap:8px}.nav button{border:0;background:transparent;color:#c8d0e3;padding:12px 14px;border-radius:12px;text-align:left}.nav button:hover,.nav button.active{background:#2a3653;color:#fff}.side-foot{position:absolute;bottom:24px;left:20px;right:20px;font-size:12px;color:#97a2bc;line-height:1.65}.sync-badge{display:inline-flex;align-items:center;gap:6px;margin-top:8px}.sync-dot{width:8px;height:8px;border-radius:50%;background:#8893aa}.sync-dot.on{background:#38d39f}main{padding:30px;max-width:1500px;width:100%;margin:auto}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:24px}.topbar h1{font-size:28px;margin:0 0 4px}.topbar p{margin:0;color:var(--muted);font-size:14px}.month-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.month-tools button,.secondary{border:1px solid var(--line);background:#fff;padding:10px 13px;border-radius:11px;color:var(--ink)}.month-label{font-weight:800;min-width:110px;text-align:center}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:18px}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}.card{padding:19px}.card .label{font-size:13px;color:var(--muted);margin-bottom:9px}.card .value{font-size:25px;font-weight:850}.card .sub{font-size:12px;color:var(--muted);margin-top:7px}.good{color:var(--good)}.bad{color:var(--bad)}.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(330px,.75fr);gap:18px}.panel{overflow:hidden}.panel-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}.panel-head h2{font-size:16px;margin:0}.panel-body{padding:20px}.income-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:18px}.field label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}.field input,.field select,.modal input,.modal select{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;background:#fbfcfe;color:var(--ink);outline:none}.primary{border:0;border-radius:11px;background:var(--accent);color:#fff;padding:10px 14px;font-weight:750}.danger{border:0;background:#fff1f1;color:#bf3e3e;padding:8px 10px;border-radius:9px}table{width:100%;border-collapse:collapse}th{text-align:left;font-size:12px;color:var(--muted);padding:10px;border-bottom:1px solid var(--line)}td{padding:8px 6px;border-bottom:1px solid #f0f2f7}td input,td select{width:100%;border:1px solid transparent;background:transparent;padding:8px;border-radius:8px}.amount{text-align:right}.empty{text-align:center;color:var(--muted);padding:30px}.fixed-summary{background:#f6f8ff;border:1px solid #e4e8ff;border-radius:13px;padding:13px 15px;margin-bottom:16px;display:flex;justify-content:space-between;gap:12px;align-items:center}.fixed-summary b{font-size:17px}.chart-wrap{display:flex;justify-content:center;align-items:center;min-height:275px}.legend{display:grid;gap:9px;margin-top:10px;max-height:280px;overflow:auto}.legend-row{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;font-size:12px}.dot{width:10px;height:10px;border-radius:3px}.progress{height:9px;background:#edf0f6;border-radius:99px;overflow:hidden;margin-top:11px}.progress i{display:block;height:100%;background:linear-gradient(90deg,#5468ff,#7c8aff);width:0}.toast{position:fixed;right:24px;bottom:24px;background:#172033;color:#fff;padding:12px 16px;border-radius:12px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:20}.toast.show{opacity:1;transform:none}.modal-bg{position:fixed;inset:0;background:rgba(16,25,45,.52);display:none;align-items:center;justify-content:center;padding:18px;z-index:10}.modal-bg.show{display:flex}.modal{background:#fff;border-radius:18px;width:min(900px,100%);max-height:90vh;overflow:auto;box-shadow:0 24px 80px rgba(0,0,0,.22)}.modal.small{width:min(620px,100%)}.modal-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.modal-head h2{margin:0;font-size:18px}.modal-body{padding:20px}.close{border:0;background:#eef1f6;border-radius:9px;padding:8px 11px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.help{font-size:13px;color:var(--muted);line-height:1.7}.sync-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.status-box{padding:12px;border-radius:12px;background:#f5f7fb;margin-bottom:14px;font-size:13px;line-height:1.6}.divider{height:1px;background:var(--line);margin:18px 0}
@@ -14,9 +80,9 @@
 <div class="app"><aside><div class="brand">MONEY NOTE<small>手取り家計管理アプリ</small></div><div class="nav"><button class="active">▦　月間ダッシュボード</button><button id="fixedSide">⚙　固定費設定</button><button id="syncSide">☁　クラウド同期</button><button id="exportSide">⇩　CSVを書き出す</button><button id="resetSide">↺　今月を初期化</button></div><div class="side-foot"><div id="saveText">この端末に自動保存中</div><div class="sync-badge"><i id="syncDot" class="sync-dot"></i><span id="syncText">クラウド未接続</span></div></div></aside>
 <main><div class="topbar"><div><h1>家計ダッシュボード</h1><p>固定費は設定から一括管理し、毎月自動で集計されます。</p></div><div class="month-tools"><button id="prev">‹</button><div class="month-label" id="monthLabel"></div><button id="next">›</button><button id="today" class="secondary">今月</button><button id="fixedTop" class="secondary">固定費設定</button><button id="syncTop" class="secondary">同期</button></div></div>
 <div class="cards"><div class="card"><div class="label">手取り収入</div><div class="value" id="netIncome">¥0</div><div class="sub" id="incomeDetail"></div></div><div class="card"><div class="label">支出・貯金 合計</div><div class="value" id="expenseTotal">¥0</div><div class="sub" id="expenseCount"></div></div><div class="card"><div class="label">残り使えるお金</div><div class="value good" id="remaining">¥0</div><div class="sub" id="remainingRate"></div></div><div class="card"><div class="label">収入に占める支出率</div><div class="value" id="spendRate">0%</div><div class="progress"><i id="spendBar"></i></div></div></div>
-<div class="grid"><section class="panel"><div class="panel-head"><h2>収入・変動費入力</h2><div><button class="secondary" id="copyPrev">前月からコピー</button> <button class="primary" id="addRow">＋ 変動費を追加</button></div></div><div class="panel-body"><div class="income-grid"><div class="field"><label>給料（額面）</label><input id="salary" name="gross_salary" type="number" min="0" step="1000" autocomplete="off" data-form-type="other" data-1p-ignore data-lpignore="true"></div><div class="field"><label>手取り率</label><select id="takeRate"><option value="0.7">70%</option><option value="0.75">75%</option><option value="0.8">80%</option><option value="0.85">85%</option><option value="0.9">90%</option><option value="1">100%</option></select></div><div class="field"><label>副業・その他の手取り収入</label><input id="extraIncome" name="extra_income" type="number" min="0" step="1000" autocomplete="off" data-form-type="other" data-1p-ignore data-lpignore="true"></div></div><div class="fixed-summary"><div><div class="help">今月に自動反映される固定費</div><b id="fixedTotal">¥0</b></div><button class="secondary" id="fixedInline">内容を編集</button></div><div class="table-scroll"><table><thead><tr><th style="width:24%">項目</th><th style="width:17%">金額</th><th style="width:18%">分類</th><th>メモ</th><th style="width:56px"></th></tr></thead><tbody id="rows"></tbody></table></div></div></section><section class="panel"><div class="panel-head"><h2>支出内訳</h2><button class="secondary" id="export">CSV</button></div><div class="panel-body"><div class="chart-wrap"><canvas id="chart" width="270" height="270"></canvas></div><div class="legend" id="legend"></div></div></section></div></main></div>
+<div class="grid"><section class="panel"><div class="panel-head"><h2>収入・変動費入力</h2><div><button class="secondary" id="copyPrev">前月からコピー</button> <button class="primary" id="addRow">＋ 変動費を追加</button></div></div><div class="panel-body"><div class="income-grid"><div class="field"><label>給料（額面）</label><input id="salary" type="number" min="0" step="1000"></div><div class="field"><label>手取り率</label><select id="takeRate"><option value="0.7">70%</option><option value="0.75">75%</option><option value="0.8">80%</option><option value="0.85">85%</option><option value="0.9">90%</option><option value="1">100%</option></select></div><div class="field"><label>副業・その他の手取り収入</label><input id="extraIncome" type="number" min="0" step="1000"></div></div><div class="fixed-summary"><div><div class="help">今月に自動反映される固定費</div><b id="fixedTotal">¥0</b></div><button class="secondary" id="fixedInline">内容を編集</button></div><div class="table-scroll"><table><thead><tr><th style="width:24%">項目</th><th style="width:17%">金額</th><th style="width:18%">分類</th><th>メモ</th><th style="width:56px"></th></tr></thead><tbody id="rows"></tbody></table></div></div></section><section class="panel"><div class="panel-head"><h2>支出内訳</h2><button class="secondary" id="export">CSV</button></div><div class="panel-body"><div class="chart-wrap"><canvas id="chart" width="270" height="270"></canvas></div><div class="legend" id="legend"></div></div></section></div></main></div>
 <div class="modal-bg" id="fixedModal"><div class="modal"><div class="modal-head"><h2>固定費設定</h2><button class="close" data-close="fixedModal">閉じる</button></div><div class="modal-body"><p class="help">ここで登録した項目はすべての月に自動反映されます。月によって金額が変わる項目は変動費に登録してください。</p><div class="table-scroll"><table><thead><tr><th>項目</th><th>月額</th><th>分類</th><th>メモ</th><th></th></tr></thead><tbody id="fixedRows"></tbody></table></div><div class="modal-actions"><button class="secondary" id="addFixed">＋ 固定費を追加</button><button class="primary" data-close="fixedModal">完了</button></div></div></div></div>
-<div class="modal-bg" id="syncModal"><div class="modal small"><div class="modal-head"><h2>クラウド同期</h2><button class="close" data-close="syncModal">閉じる</button></div><div class="modal-body"><div id="syncStatus" class="status-box">Firebaseへ接続中です。</div><p class="help">メールアドレスとパスワードだけでログインできます。同じアカウントでログインしたスマホとPCのデータが同期されます。</p><form id="authForm" autocomplete="on" onsubmit="return false"><div class="sync-grid"><div class="field"><label>メールアドレス</label><input id="syncEmail" name="username" type="email" autocomplete="username"></div><div class="field"><label>パスワード（6文字以上）</label><input id="syncPassword" name="password" type="password" autocomplete="current-password"></div></div></form><div class="modal-actions" style="justify-content:flex-start;flex-wrap:wrap"><button class="secondary" id="register" type="button">新規登録</button><button class="primary" id="login" type="button">ログイン</button><button class="danger" id="logout" type="button" style="display:none">ログアウト</button><button class="secondary" id="saveCloud" type="button" style="display:none">今のデータを保存</button><button class="secondary" id="loadCloud" type="button" style="display:none">クラウドから取得</button></div><div class="divider"></div><p class="help"><b>スマホで使うには：</b>GitHub Pagesの同じURLを開き、同じメールアドレスとパスワードでログインしてください。ログイン中は入力内容が自動保存されます。</p></div></div></div>
+<div class="modal-bg" id="syncModal"><div class="modal small"><div class="modal-head"><h2>クラウド同期</h2><button class="close" data-close="syncModal">閉じる</button></div><div class="modal-body"><div id="syncStatus" class="status-box">Firebaseへ接続中です。</div><p class="help">メールアドレスとパスワードだけでログインできます。同じアカウントでログインしたスマホとPCのデータが同期されます。</p><div class="sync-grid"><div class="field"><label>メールアドレス</label><input id="syncEmail" type="email" autocomplete="email"></div><div class="field"><label>パスワード（6文字以上）</label><input id="syncPassword" type="password" autocomplete="current-password"></div></div><div class="modal-actions" style="justify-content:flex-start;flex-wrap:wrap"><button class="secondary" id="register">新規登録</button><button class="primary" id="login">ログイン</button><button class="danger" id="logout" style="display:none">ログアウト</button><button class="secondary" id="saveCloud" style="display:none">今のデータを保存</button><button class="secondary" id="loadCloud" style="display:none">クラウドから取得</button></div><div class="divider"></div><p class="help"><b>スマホで使うには：</b>GitHub Pagesの同じURLを開き、同じメールアドレスとパスワードでログインしてください。ログイン中は入力内容が自動保存されます。</p></div></div></div>
 <div class="toast" id="toast"></div>
 <script type="module">
 const yen=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0}).format(Math.round(n||0));
@@ -34,7 +100,7 @@ function save({cloudSync=true}={}){localStorage.setItem(localKey(),JSON.stringif
 function toast(s){const t=document.querySelector('#toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function renderAll(){document.querySelector('#monthLabel').textContent=`${cursor.getFullYear()}年 ${cursor.getMonth()+1}月`;salary.value=data.salary;takeRate.value=data.takeRate;extraIncome.value=data.extraIncome;renderRows();renderFixedRows();updateSummary()}
-function rowHTML(r,cats){const ignore=`autocomplete="off" data-form-type="other" data-1p-ignore data-lpignore="true"`;return `<td><input ${ignore} name="expense_name_${r.id}" data-k="name" value="${esc(r.name)}" placeholder="例：食費"></td><td><input ${ignore} name="expense_amount_${r.id}" class="amount" data-k="amount" type="number" inputmode="numeric" min="0" value="${r.amount||0}"></td><td><select name="expense_category_${r.id}" autocomplete="off" data-form-type="other" data-k="category">${cats.map(c=>`<option ${c===r.category?'selected':''}>${c}</option>`).join('')}</select></td><td><input ${ignore} name="expense_memo_${r.id}" data-k="memo" value="${esc(r.memo||'')}" placeholder="任意メモ"></td><td><button class="danger" type="button">削除</button></td>`}
+function rowHTML(r,cats){return `<td><input data-k="name" value="${esc(r.name)}" placeholder="例：食費"></td><td><input class="amount" data-k="amount" type="number" min="0" value="${r.amount||0}"></td><td><select data-k="category">${cats.map(c=>`<option ${c===r.category?'selected':''}>${c}</option>`).join('')}</select></td><td><input data-k="memo" value="${esc(r.memo||'')}" placeholder="任意メモ"></td><td><button class="danger">削除</button></td>`}
 function bindRow(tr,r,list,rerender){tr.querySelectorAll('[data-k]').forEach(el=>el.addEventListener('input',()=>{r[el.dataset.k]=el.dataset.k==='amount'?Number(el.value):el.value;save()}));tr.querySelector('.danger').onclick=()=>{const i=list.findIndex(x=>x.id===r.id);if(i>=0)list.splice(i,1);save();rerender()}}
 function renderRows(){rows.innerHTML='';if(!data.rows.length){rows.innerHTML='<tr><td colspan="5" class="empty">変動費はまだありません。</td></tr>';return}data.rows.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=rowHTML(r,variableCategories);bindRow(tr,r,data.rows,renderRows);rows.appendChild(tr)})}
 function renderFixedRows(){fixedRows.innerHTML='';if(!fixedCosts.length){fixedRows.innerHTML='<tr><td colspan="5" class="empty">固定費はまだありません。</td></tr>';return}fixedCosts.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=rowHTML(r,fixedCategories);bindRow(tr,r,fixedCosts,renderFixedRows);fixedRows.appendChild(tr)})}
@@ -54,5 +120,506 @@ async function saveCloudNow(){try{const {doc,setDoc,serverTimestamp}=cloud.mods;
 async function startCloud(){try{const {doc,getDoc,setDoc,onSnapshot,serverTimestamp}=cloud.mods;const ref=doc(cloud.db,'users',cloud.user.uid);const snap=await getDoc(ref);if(snap.exists()){applyRemote(snap.data());toast('クラウドデータを読み込みました')}else{await setDoc(ref,{fixedCosts,months:collectMonths(),updatedAt:serverTimestamp()});toast('この端末のデータをクラウドへ保存しました')}cloud.unsub?.();cloud.unsub=onSnapshot(ref,s=>{if(s.exists()&&!cloud.saveTimer)applyRemote(s.data())},e=>{syncText.textContent='同期エラー';console.error(e)})}catch(e){setSyncUI(`同期を開始できません：${friendlyError(e)}`);toast(friendlyError(e))}}
 function applyRemote(remote){if(remote.fixedCosts){fixedCosts=remote.fixedCosts;localStorage.setItem('money-note-fixed-v2',JSON.stringify(fixedCosts))}Object.entries(remote.months||{}).forEach(([m,v])=>localStorage.setItem(`money-note-v2-${m}`,JSON.stringify(v)));data=readJSON(localKey(),fresh());renderAll()}
 function scheduleCloudSave(){if(!cloud.user||!cloud.db)return;clearTimeout(cloud.saveTimer);cloud.saveTimer=setTimeout(async()=>{try{const {doc,setDoc,serverTimestamp}=cloud.mods;await setDoc(doc(cloud.db,'users',cloud.user.uid),{fixedCosts,months:collectMonths(),updatedAt:serverTimestamp()},{merge:true});syncText.textContent='同期済み'}catch(e){syncText.textContent='同期エラー';console.error(e)}finally{cloud.saveTimer=null}},700)}
+load();initFirebase();
+</script></body></html>
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBLG2gWcGwpSQhbsJErw0BANbALbfWDXAY",
+  authDomain: "kakeiboapp-810ef.firebaseapp.com",
+  projectId: "kakeiboapp-810ef",
+  storageBucket: "kakeiboapp-810ef.firebasestorage.app",
+  messagingSenderId: "692602496439",
+  appId: "1:692602496439:web:ecae242f353b18518d7432",
+  measurementId: "G-KWQVJK8SDS"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+体重管理もやって
+
+体重管理アプリにもFirebase設定を組み込み、メールアドレスとパスワードだけで同期できる版に修正しました。
+
+weight_tracker_index.html
+
+ZIP版をダウンロード
+
+変更内容：
+
+Firebase設定JSON入力欄を削除
+
+メールアドレス・パスワードだけで登録／ログイン
+
+入力した食事・運動・体重データを自動クラウド保存
+
+PCとスマホで同じアカウントのデータを共有
+
+家計簿データとは別の weightTracker データとして保存
+
+手動の「クラウドへ保存」「クラウドから取得」にも対応
+
+GitHub Pagesへ公開する場合は、このファイルを体重管理用リポジトリへアップロードし、ファイル名を index.html にしてください。
+
+weightapp
+└─ index.html
+Firebase側のFirestoreルールは、家計簿で設定した次の形式のままで利用できます。
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+  }
+}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <title>からだログ | カロリー・運動・体重管理</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root{--bg:#f3f5f8;--card:#fff;--ink:#172033;--muted:#6b7280;--line:#e5e7eb;--brand:#111827;--accent:#2563eb;--good:#059669;--warn:#d97706;--bad:#dc2626;--soft:#eef2ff;--radius:18px;--shadow:0 10px 28px rgba(15,23,42,.08)}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Noto Sans JP","Yu Gothic UI",system-ui,sans-serif}.app{min-height:100vh}.topbar{position:sticky;top:0;z-index:20;background:rgba(17,24,39,.96);backdrop-filter:blur(10px);color:#fff;padding:14px max(16px,env(safe-area-inset-right)) 14px max(16px,env(safe-area-inset-left));display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-weight:800;font-size:18px;letter-spacing:.02em}.brand small{display:block;font-size:10px;color:#9ca3af;font-weight:500}.top-actions{display:flex;gap:8px}.btn{border:0;border-radius:12px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer;transition:.18s}.btn:hover{transform:translateY(-1px)}.btn.primary{background:var(--accent);color:#fff}.btn.dark{background:#374151;color:#fff}.btn.light{background:#fff;color:var(--ink)}.btn.ghost{background:#f3f4f6;color:var(--ink)}.btn.danger{background:#fee2e2;color:#991b1b}.btn.small{padding:7px 10px;font-size:12px}.layout{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:calc(100vh - 68px)}.sidebar{background:#fff;border-right:1px solid var(--line);padding:18px 12px;position:sticky;top:68px;height:calc(100vh - 68px)}.nav{display:grid;gap:6px}.nav button{border:0;background:transparent;text-align:left;padding:12px 14px;border-radius:12px;color:#4b5563;font:inherit;font-weight:700;cursor:pointer}.nav button.active{background:#eef2ff;color:#1d4ed8}.side-foot{position:absolute;bottom:18px;left:12px;right:12px;color:var(--muted);font-size:11px;line-height:1.5}.main{padding:24px;max-width:1440px;width:100%;margin:auto}.page{display:none}.page.active{display:block}.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}.page-head h1{margin:0;font-size:26px}.page-head p{margin:5px 0 0;color:var(--muted);font-size:13px}.month-nav{display:flex;align-items:center;gap:8px}.month-label{min-width:130px;text-align:center;font-weight:800}.grid{display:grid;gap:16px}.kpis{grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:16px}.card{background:var(--card);border:1px solid rgba(229,231,235,.9);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}.kpi .label{color:var(--muted);font-size:12px;font-weight:700}.kpi .value{font-size:25px;font-weight:850;margin-top:8px}.kpi .sub{font-size:11px;color:var(--muted);margin-top:5px}.two{grid-template-columns:1.35fr .65fr}.chart-wrap{height:320px}.progress{height:9px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:12px}.progress>span{display:block;height:100%;background:var(--accent);border-radius:inherit}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.section-title h2{font-size:16px;margin:0}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}.data-table{width:100%;border-collapse:collapse;min-width:1180px;background:#fff}.data-table th{position:sticky;top:0;background:#f8fafc;color:#475569;font-size:11px;text-align:center;padding:10px 7px;border-bottom:1px solid var(--line);white-space:nowrap}.data-table td{padding:5px;border-bottom:1px solid #f1f5f9;text-align:center}.data-table tr.today{background:#eff6ff}.data-table input{width:76px;border:1px solid #dbe1ea;border-radius:8px;padding:8px 6px;font:inherit;text-align:right;background:#fff}.data-table input.memo{width:180px;text-align:left}.data-table td.date{font-size:12px;white-space:nowrap;text-align:left;padding-left:10px}.data-table td.calc{font-size:12px;font-weight:700}.positive{color:var(--good)}.negative{color:var(--bad)}.mobile-list{display:none;gap:12px}.day-card{background:#fff;border-radius:16px;border:1px solid var(--line);padding:15px;box-shadow:0 5px 16px rgba(15,23,42,.05)}.day-card summary{list-style:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer}.day-card summary::-webkit-details-marker{display:none}.day-title{font-weight:800}.day-summary{font-size:12px;color:var(--muted);margin-top:4px}.day-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:var(--muted);font-weight:700}.field input,.field select,.field textarea{width:100%;border:1px solid #dbe1ea;border-radius:10px;padding:11px;font:inherit;background:#fff}.field textarea{resize:vertical;min-height:74px}.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.setting-section{margin-bottom:18px}.notice{padding:12px 14px;border-radius:12px;background:#eff6ff;color:#1e40af;font-size:12px;line-height:1.55}.cloud-state{display:flex;align-items:center;gap:8px;font-size:12px}.dot{width:9px;height:9px;border-radius:50%;background:#9ca3af}.dot.online{background:#10b981}.modal{position:fixed;inset:0;z-index:50;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;padding:16px}.modal.open{display:flex}.modal-card{background:#fff;border-radius:20px;max-width:600px;width:100%;max-height:90vh;overflow:auto;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.28)}.modal-head{display:flex;justify-content:space-between;align-items:center}.modal-head h2{margin:0}.close{border:0;background:#f3f4f6;border-radius:10px;width:36px;height:36px;cursor:pointer}.actions{display:flex;gap:10px;flex-wrap:wrap}.toast{position:fixed;right:18px;bottom:18px;z-index:100;background:#111827;color:#fff;padding:12px 16px;border-radius:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:none}.empty{padding:35px;text-align:center;color:var(--muted)}
+    @media(max-width:1050px){.kpis{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:760px){.topbar{padding:11px 12px}.brand small{display:none}.layout{display:block}.sidebar{position:fixed;z-index:25;left:0;right:0;bottom:0;top:auto;height:auto;border:0;border-top:1px solid var(--line);padding:7px max(6px,env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left))}.nav{grid-template-columns:repeat(4,1fr);gap:2px}.nav button{text-align:center;padding:9px 3px;font-size:11px}.side-foot{display:none}.main{padding:18px 12px 90px}.page-head{align-items:flex-start;flex-direction:column}.page-head h1{font-size:22px}.month-nav{width:100%;justify-content:space-between}.kpis{grid-template-columns:1fr 1fr}.kpi .value{font-size:21px}.desktop-table{display:none}.mobile-list{display:grid}.form-grid{grid-template-columns:1fr}.chart-wrap{height:270px}.top-actions .desktop-only{display:none}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar"><div class="brand">からだログ<small>カロリー・運動・体重管理</small></div><div class="top-actions"><div class="cloud-state"><span id="cloudDot" class="dot"></span><span id="cloudText">端末内保存</span></div><button class="btn dark desktop-only" onclick="openCloud()">同期設定</button></div></header>
+  <div class="layout">
+    <aside class="sidebar"><nav class="nav"><button class="active" data-page="dashboard">ダッシュボード</button><button data-page="records">日々の記録</button><button data-page="settings">目標設定</button><button data-page="data">データ管理</button></nav><div class="side-foot">入力内容は自動保存されます。<br>クラウド同期を設定すると、PCとスマホで共有できます。</div></aside>
+    <main class="main">
+      <section id="dashboard" class="page active">
+        <div class="page-head"><div><h1>ダッシュボード</h1><p>食事・運動・体重の推移をまとめて確認</p></div><div class="month-nav"><button class="btn ghost small" onclick="changeMonth(-1)">←</button><div id="dashMonth" class="month-label"></div><button class="btn ghost small" onclick="changeMonth(1)">→</button></div></div>
+        <div class="grid kpis">
+          <div class="card kpi"><div class="label">今日の摂取</div><div class="value" id="kpiIntake">0 kcal</div><div class="sub" id="kpiIntakeSub">目標 1,800 kcal</div></div>
+          <div class="card kpi"><div class="label">今日の運動消費</div><div class="value" id="kpiExercise">0 kcal</div><div class="sub">筋トレ・有酸素・歩数</div></div>
+          <div class="card kpi"><div class="label">今日の差引摂取</div><div class="value" id="kpiNet">0 kcal</div><div class="sub">摂取 − 運動消費</div></div>
+          <div class="card kpi"><div class="label">今日の残り</div><div class="value" id="kpiRemain">0 kcal</div><div class="sub">目標までの残り</div></div>
+          <div class="card kpi"><div class="label">最新体重</div><div class="value" id="kpiWeight">-- kg</div><div class="sub" id="kpiWeightSub">目標まで -- kg</div></div>
+        </div>
+        <div class="grid two">
+          <div class="card"><div class="section-title"><h2>カロリー推移</h2><span id="avgIntake" class="sub"></span></div><div class="chart-wrap"><canvas id="calorieChart"></canvas></div></div>
+          <div class="card"><div class="section-title"><h2>目標体重まで</h2></div><div style="font-size:34px;font-weight:850" id="goalText">-- kg</div><div class="progress"><span id="goalProgress" style="width:0%"></span></div><p id="goalDetail" style="color:var(--muted);font-size:12px;line-height:1.6"></p><hr style="border:0;border-top:1px solid var(--line);margin:22px 0"><div class="section-title"><h2>今月の記録</h2></div><div id="monthStats" style="display:grid;gap:10px;font-size:13px"></div></div>
+        </div>
+        <div class="card" style="margin-top:16px"><div class="section-title"><h2>体重推移</h2><span id="weightChange" class="sub"></span></div><div class="chart-wrap"><canvas id="weightChart"></canvas></div></div>
+      </section>
+
+      <section id="records" class="page">
+        <div class="page-head"><div><h1>日々の記録</h1><p>黄色い入力欄の代わりに、食事・運動・体重を直接入力</p></div><div class="month-nav"><button class="btn ghost small" onclick="changeMonth(-1)">←</button><div id="recordMonth" class="month-label"></div><button class="btn ghost small" onclick="changeMonth(1)">→</button></div></div>
+        <div class="card desktop-table"><div class="table-wrap"><table class="data-table"><thead><tr><th>日付</th><th>目標</th><th>朝食</th><th>昼食</th><th>夕食</th><th>間食</th><th>摂取計</th><th>筋トレ</th><th>有酸素</th><th>歩数</th><th>運動消費</th><th>差引</th><th>残り</th><th>たんぱく質</th><th>体重</th><th>メモ</th></tr></thead><tbody id="recordBody"></tbody></table></div></div>
+        <div id="mobileRecords" class="mobile-list"></div>
+      </section>
+
+      <section id="settings" class="page">
+        <div class="page-head"><div><h1>目標設定</h1><p>ExcelのSettingsシートに相当する設定です</p></div></div>
+        <div class="card setting-section"><div class="section-title"><h2>身体・目標</h2></div><div class="form-grid">
+          <div class="field"><label>身長（cm）</label><input id="sHeight" type="number" step="0.1"></div><div class="field"><label>開始時体重（kg）</label><input id="sStartWeight" type="number" step="0.1"></div><div class="field"><label>目標体重（kg）</label><input id="sGoalWeight" type="number" step="0.1"></div><div class="field"><label>1日の目標摂取（kcal）</label><input id="sCalories" type="number" step="1"></div><div class="field"><label>たんぱく質目標（g）</label><input id="sProtein" type="number" step="1"></div><div class="field"><label>月間減量目標（kg）</label><input id="sMonthlyGoal" type="number" step="0.1"></div>
+        </div></div>
+        <div class="card setting-section"><div class="section-title"><h2>運動消費の計算</h2></div><div class="form-grid"><div class="field"><label>筋トレ METs（推定）</label><input id="sStrengthMet" type="number" step="0.1"></div><div class="field"><label>有酸素 METs（推定）</label><input id="sCardioMet" type="number" step="0.1"></div><div class="field"><label>歩数 1歩あたり（kcal）</label><input id="sStepKcal" type="number" step="0.001"></div></div><div class="notice" style="margin-top:14px">運動消費は「METs × 体重 × 時間」と歩数から概算します。体重が未入力の日は最新体重または開始時体重を使用します。</div></div>
+        <button class="btn primary" onclick="saveSettings()">設定を保存</button>
+      </section>
+
+      <section id="data" class="page">
+        <div class="page-head"><div><h1>データ管理</h1><p>バックアップ、復元、CSV出力、端末間同期</p></div></div>
+        <div class="grid two"><div class="card"><div class="section-title"><h2>バックアップ</h2></div><p style="font-size:13px;color:var(--muted);line-height:1.7">JSONは設定とすべての月の記録を保存します。CSVは表示中の月を表計算ソフトで開ける形式で出力します。</p><div class="actions"><button class="btn primary" onclick="exportJson()">JSONを書き出す</button><button class="btn ghost" onclick="document.getElementById('importFile').click()">JSONを読み込む</button><button class="btn ghost" onclick="exportCsv()">今月をCSV出力</button><input id="importFile" type="file" accept="application/json" hidden></div></div><div class="card"><div class="section-title"><h2>クラウド同期</h2></div><p style="font-size:13px;color:var(--muted);line-height:1.7">Firebaseを設定すると、同じメールアドレスでログインしたPCとスマホから同じデータを利用できます。</p><button class="btn dark" onclick="openCloud()">同期設定を開く</button></div></div>
+        <div class="card" style="margin-top:16px"><div class="section-title"><h2>初期化</h2></div><p style="font-size:13px;color:var(--muted)">端末内の記録と設定をすべて削除します。この操作は元に戻せません。</p><button class="btn danger" onclick="resetAll()">すべてのデータを削除</button></div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="modal" id="cloudModal"><div class="modal-card"><div class="modal-head"><h2>クラウド同期</h2><button class="close" onclick="closeCloud()">×</button></div><p class="notice">メールアドレスとパスワードだけでログインできます。同じアカウントでログインしたPCとスマホから、同じ体重管理データを利用できます。</p><div class="form-grid" style="margin-top:16px;grid-template-columns:1fr 1fr"><div class="field"><label>メールアドレス</label><input id="cloudEmail" type="email" autocomplete="email"></div><div class="field"><label>パスワード（6文字以上）</label><input id="cloudPassword" type="password" minlength="6" autocomplete="current-password"></div></div><div class="actions" style="margin-top:16px"><button class="btn primary" id="cloudLogin" onclick="cloudSignIn(false)">ログイン</button><button class="btn ghost" id="cloudRegister" onclick="cloudSignIn(true)">新規登録</button><button class="btn ghost" id="cloudSave" onclick="cloudPush()" style="display:none">今のデータを保存</button><button class="btn ghost" id="cloudLoad" onclick="cloudPull()" style="display:none">クラウドから取得</button><button class="btn danger" id="cloudLogoutBtn" onclick="cloudLogout()" style="display:none">ログアウト</button></div><p id="cloudMessage" style="font-size:12px;color:var(--muted);line-height:1.6">Firebaseへ接続中です。</p></div></div>
+<div id="toast" class="toast"></div>
+<script>
+const FIREBASE_CONFIG={apiKey:'AIzaSyBLG2gWcGwpSQhbsJErw0BANbALbfWDXAY',authDomain:'kakeiboapp-810ef.firebaseapp.com',projectId:'kakeiboapp-810ef',storageBucket:'kakeiboapp-810ef.firebasestorage.app',messagingSenderId:'692602496439',appId:'1:692602496439:web:ecae242f353b18518d7432',measurementId:'G-KWQVJK8SDS'};
+const STORAGE_KEY='karada_log_v1';
+const initialData={settings:{height:167,startWeight:65,goalWeight:55,targetCalories:1800,proteinGoal:100,strengthMet:5,cardioMet:7,stepKcal:.04,monthlyGoal:2},months:{'2026-07':{
+'2026-07-09':{breakfast:116,lunch:1100,dinner:510,snack:0,strength:0,cardio:0,steps:7000,protein:'',weight:63.8,memo:''},
+'2026-07-10':{breakfast:440,lunch:116,dinner:905,snack:0,strength:10,cardio:30,steps:0,protein:'',weight:63.3,memo:''},
+'2026-07-11':{breakfast:715,lunch:120,dinner:763,snack:0,strength:0,cardio:0,steps:0,protein:'',weight:62.5,memo:''},
+'2026-07-12':{breakfast:0,lunch:0,dinner:0,snack:0,strength:0,cardio:0,steps:0,protein:'',weight:63.1,memo:''},
+'2026-07-13':{breakfast:270,lunch:255,dinner:860,snack:0,strength:0,cardio:30,steps:0,protein:'',weight:63.1,memo:''},
+'2026-07-14':{breakfast:300,lunch:350,dinner:750,snack:0,strength:0,cardio:0,steps:0,protein:'',weight:62.5,memo:''},
+'2026-07-15':{breakfast:0,lunch:600,dinner:700,snack:0,strength:0,cardio:0,steps:0,protein:'',weight:63.2,memo:''},
+'2026-07-16':{breakfast:300,lunch:0,dinner:1300,snack:0,strength:0,cardio:0,steps:0,protein:'',weight:63,memo:''},
+'2026-07-17':{breakfast:0,lunch:0,dinner:1600,snack:0,strength:0,cardio:0,steps:0,protein:'',weight:62.2,memo:''},
+'2026-07-18':{breakfast:500,lunch:700,dinner:200,snack:0,strength:0,cardio:0,steps:0,protein:'',weight:'',memo:''},
+'2026-07-19':{breakfast:700,lunch:200,dinner:650,snack:0,strength:0,cardio:0,steps:0,protein:'',weight:'',memo:''},
+'2026-07-20':{breakfast:520,lunch:800,dinner:0,snack:0,strength:0,cardio:0,steps:0,protein:'',weight:'',memo:''}
+}},cloud:{config:'',email:''}};
+let state=loadState();let viewDate=new Date();let calorieChart,weightChart;let fb={app:null,auth:null,db:null,user:null,mods:null};
+function loadState(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||structuredClone(initialData)}catch{return structuredClone(initialData)}}
+function saveState(sync=true){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));if(sync&&fb.user)debouncedCloudPush();}
+let syncTimer;function debouncedCloudPush(){clearTimeout(syncTimer);syncTimer=setTimeout(()=>cloudPush(true),900)}
+const num=v=>{const n=parseFloat(String(v??'').replace(',','.'));return Number.isFinite(n)?n:0};const val=v=>v===0?0:(v||'');const pad=n=>String(n).padStart(2,'0');const monthKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}`;const isoDate=(y,m,d)=>`${y}-${pad(m)}-${pad(d)}`;const fmt=n=>Math.round(num(n)).toLocaleString('ja-JP');
+function monthData(){const k=monthKey(viewDate);state.months[k]??={};return state.months[k]}
+function daysInMonth(){return new Date(viewDate.getFullYear(),viewDate.getMonth()+1,0).getDate()}
+function latestWeight(untilDate){let found=[];Object.values(state.months).forEach(m=>Object.entries(m).forEach(([d,r])=>{if(r.weight!==''&&r.weight!=null&&(!untilDate||d<=untilDate))found.push([d,num(r.weight)]) }));found.sort((a,b)=>a[0].localeCompare(b[0]));return found.length?found.at(-1)[1]:num(state.settings.startWeight)}
+function calc(date,r){const intake=num(r.breakfast)+num(r.lunch)+num(r.dinner)+num(r.snack);const w=r.weight!==''&&r.weight!=null?num(r.weight):latestWeight(date);const ex=num(state.settings.strengthMet)*w*(num(r.strength)/60)+num(state.settings.cardioMet)*w*(num(r.cardio)/60)+num(r.steps)*num(state.settings.stepKcal);const net=intake-ex;return{intake,exercise:ex,net,remain:num(state.settings.targetCalories)-net}}
+function changeMonth(delta){viewDate=new Date(viewDate.getFullYear(),viewDate.getMonth()+delta,1);renderAll()}
+function renderAll(){const label=`${viewDate.getFullYear()}年${viewDate.getMonth()+1}月`;document.getElementById('dashMonth').textContent=label;document.getElementById('recordMonth').textContent=label;renderRecords();renderDashboard();renderSettings()}
+function renderRecords(){const tbody=document.getElementById('recordBody'),mobile=document.getElementById('mobileRecords');tbody.innerHTML='';mobile.innerHTML='';const y=viewDate.getFullYear(),m=viewDate.getMonth()+1,data=monthData(),today=new Date(),todayIso=isoDate(today.getFullYear(),today.getMonth()+1,today.getDate());for(let d=1;d<=daysInMonth();d++){const date=isoDate(y,m,d);const r=data[date]??{};const c=calc(date,r);const wd='日月火水木金土'[new Date(y,m-1,d).getDay()];const tr=document.createElement('tr');if(date===todayIso)tr.className='today';tr.innerHTML=`<td class="date">${m}/${d}（${wd}）</td><td class="calc">${fmt(state.settings.targetCalories)}</td>${inputTd(date,'breakfast',r)}${inputTd(date,'lunch',r)}${inputTd(date,'dinner',r)}${inputTd(date,'snack',r)}<td class="calc">${fmt(c.intake)}</td>${inputTd(date,'strength',r)}${inputTd(date,'cardio',r)}${inputTd(date,'steps',r)}<td class="calc">${fmt(c.exercise)}</td><td class="calc">${fmt(c.net)}</td><td class="calc ${c.remain<0?'negative':'positive'}">${fmt(c.remain)}</td>${inputTd(date,'protein',r)}${inputTd(date,'weight',r,'0.1')}${inputTd(date,'memo',r,'','memo')}`;tbody.appendChild(tr);
+const det=document.createElement('details');det.className='day-card';if(date===todayIso)det.open=true;det.innerHTML=`<summary><div><div class="day-title">${m}月${d}日（${wd}）${date===todayIso?'・今日':''}</div><div class="day-summary">摂取 ${fmt(c.intake)} / 運動 ${fmt(c.exercise)} / 残り ${fmt(c.remain)} kcal</div></div><span>⌄</span></summary><div class="day-fields">${mobileField(date,'朝食 kcal','breakfast',r)}${mobileField(date,'昼食 kcal','lunch',r)}${mobileField(date,'夕食 kcal','dinner',r)}${mobileField(date,'間食・飲み物 kcal','snack',r)}${mobileField(date,'筋トレ 分','strength',r)}${mobileField(date,'有酸素 分','cardio',r)}${mobileField(date,'歩数','steps',r)}${mobileField(date,'たんぱく質 g','protein',r)}${mobileField(date,'体重 kg','weight',r,'0.1')}<div class="field full"><label>メモ</label><textarea data-date="${date}" data-key="memo" onchange="updateRecord(this)">${r.memo||''}</textarea></div></div>`;mobile.appendChild(det)}}
+function inputTd(date,key,r,step='',cls=''){return `<td><input class="${cls}" type="${key==='memo'?'text':'number'}" ${step?`step="${step}"`:''} value="${val(r[key])}" data-date="${date}" data-key="${key}" onchange="updateRecord(this)"></td>`}
+function mobileField(date,label,key,r,step=''){return `<div class="field"><label>${label}</label><input type="number" ${step?`step="${step}"`:''} value="${val(r[key])}" data-date="${date}" data-key="${key}" onchange="updateRecord(this)"></div>`}
+function updateRecord(el){const data=monthData(),date=el.dataset.date,key=el.dataset.key;data[date]??={};data[date][key]=key==='memo'?el.value:(el.value===''?'':num(el.value));saveState();renderAll()}
+function renderDashboard(){const data=monthData(),y=viewDate.getFullYear(),m=viewDate.getMonth()+1,today=new Date(),isCurrent=y===today.getFullYear()&&m===today.getMonth()+1,focusDate=isCurrent?isoDate(y,m,today.getDate()):isoDate(y,m,daysInMonth());const todayR=data[focusDate]??{},tc=calc(focusDate,todayR);document.getElementById('kpiIntake').textContent=`${fmt(tc.intake)} kcal`;document.getElementById('kpiIntakeSub').textContent=`目標 ${fmt(state.settings.targetCalories)} kcal`;document.getElementById('kpiExercise').textContent=`${fmt(tc.exercise)} kcal`;document.getElementById('kpiNet').textContent=`${fmt(tc.net)} kcal`;document.getElementById('kpiRemain').textContent=`${fmt(tc.remain)} kcal`;document.getElementById('kpiRemain').className=`value ${tc.remain<0?'negative':'positive'}`;const latest=latestWeight();document.getElementById('kpiWeight').textContent=`${latest.toFixed(1)} kg`;document.getElementById('kpiWeightSub').textContent=`目標まで ${(latest-num(state.settings.goalWeight)).toFixed(1)} kg`;
+let labels=[],intakes=[],exs=[],nets=[],weights=[],recorded=0,total=0,over=0,exerciseDays=0;for(let d=1;d<=daysInMonth();d++){const date=isoDate(y,m,d),r=data[date]??{},c=calc(date,r);labels.push(`${d}日`);const hasFood=['breakfast','lunch','dinner','snack'].some(k=>r[k]!==''&&r[k]!=null);intakes.push(hasFood?Math.round(c.intake):null);exs.push(c.exercise?Math.round(c.exercise):null);nets.push(hasFood?Math.round(c.net):null);weights.push(r.weight!==''&&r.weight!=null?num(r.weight):null);if(hasFood){recorded++;total+=c.intake;if(c.net>num(state.settings.targetCalories))over++}if(c.exercise>0)exerciseDays++}
+const avg=recorded?total/recorded:0;document.getElementById('avgIntake').textContent=`記録日の平均 ${fmt(avg)} kcal`;document.getElementById('monthStats').innerHTML=`<div>記録日数 <strong style="float:right">${recorded}日</strong></div><div>運動した日 <strong style="float:right">${exerciseDays}日</strong></div><div>目標超過日 <strong style="float:right">${over}日</strong></div>`;const goal=num(state.settings.goalWeight),start=num(state.settings.startWeight),remain=latest-goal,progress=Math.max(0,Math.min(100,(start-latest)/(start-goal)*100));document.getElementById('goalText').textContent=`あと ${Math.max(0,remain).toFixed(1)} kg`;document.getElementById('goalProgress').style.width=`${progress}%`;document.getElementById('goalDetail').textContent=`開始 ${start.toFixed(1)} kg → 現在 ${latest.toFixed(1)} kg → 目標 ${goal.toFixed(1)} kg（達成度 ${Math.round(progress)}%）`;
+const ws=weights.map((v,i)=>v!=null?[i,v]:null).filter(Boolean);document.getElementById('weightChange').textContent=ws.length>=2?`月初比 ${(ws.at(-1)[1]-ws[0][1]).toFixed(1)} kg`:'体重を2日以上記録すると変化を表示';drawCharts(labels,intakes,nets,weights)}
+function drawCharts(labels,intakes,nets,weights){calorieChart?.destroy();weightChart?.destroy();calorieChart=new Chart(document.getElementById('calorieChart'),{type:'line',data:{labels,datasets:[{label:'摂取合計',data:intakes,borderWidth:2,tension:.25,spanGaps:true},{label:'差引摂取',data:nets,borderWidth:2,tension:.25,spanGaps:true},{label:'目標',data:labels.map(()=>num(state.settings.targetCalories)),borderDash:[6,5],borderWidth:1,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v.toLocaleString()+' kcal'}}}}});weightChart=new Chart(document.getElementById('weightChart'),{type:'line',data:{labels,datasets:[{label:'体重',data:weights,borderWidth:3,tension:.25,spanGaps:true,pointRadius:4},{label:'目標体重',data:labels.map(()=>num(state.settings.goalWeight)),borderDash:[6,5],borderWidth:1,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{suggestedMin:num(state.settings.goalWeight)-2,suggestedMax:num(state.settings.startWeight)+2,ticks:{callback:v=>v+' kg'}}}}})}
+function renderSettings(){const s=state.settings;[['sHeight','height'],['sStartWeight','startWeight'],['sGoalWeight','goalWeight'],['sCalories','targetCalories'],['sProtein','proteinGoal'],['sMonthlyGoal','monthlyGoal'],['sStrengthMet','strengthMet'],['sCardioMet','cardioMet'],['sStepKcal','stepKcal']].forEach(([id,k])=>document.getElementById(id).value=s[k])}
+function saveSettings(){const map={sHeight:'height',sStartWeight:'startWeight',sGoalWeight:'goalWeight',sCalories:'targetCalories',sProtein:'proteinGoal',sMonthlyGoal:'monthlyGoal',sStrengthMet:'strengthMet',sCardioMet:'cardioMet',sStepKcal:'stepKcal'};Object.entries(map).forEach(([id,k])=>state.settings[k]=num(document.getElementById(id).value));saveState();renderAll();toast('設定を保存しました')}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===b.dataset.page));if(b.dataset.page==='dashboard')setTimeout(renderDashboard,0)})
+function exportJson(){download(`karada-log-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(state,null,2),'application/json')}
+function exportCsv(){const y=viewDate.getFullYear(),m=viewDate.getMonth()+1,data=monthData(),rows=[['日付','目標(kcal)','朝食','昼食','夕食','間食/飲み物','摂取合計','筋トレ(分)','有酸素(分)','歩数','運動消費','差引摂取','残り','たんぱく質(g)','体重(kg)','メモ']];for(let d=1;d<=daysInMonth();d++){const date=isoDate(y,m,d),r=data[date]??{},c=calc(date,r);rows.push([date,state.settings.targetCalories,r.breakfast??'',r.lunch??'',r.dinner??'',r.snack??'',Math.round(c.intake),r.strength??'',r.cardio??'',r.steps??'',Math.round(c.exercise),Math.round(c.net),Math.round(c.remain),r.protein??'',r.weight??'',r.memo??''])}const csv='\uFEFF'+rows.map(row=>row.map(x=>`"${String(x).replaceAll('"','""')}"`).join(',')).join('\r\n');download(`karada-log-${monthKey(viewDate)}.csv`,csv,'text/csv;charset=utf-8')}
+function download(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+document.getElementById('importFile').onchange=async e=>{try{const obj=JSON.parse(await e.target.files[0].text());if(!obj.settings||!obj.months)throw Error();state=obj;saveState(false);renderAll();toast('データを読み込みました')}catch{alert('対応するバックアップファイルではありません。')}e.target.value=''};
+function resetAll(){if(confirm('すべての端末内データを削除しますか？')){state=structuredClone(initialData);saveState(false);renderAll();toast('初期状態に戻しました')}}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function openCloud(){document.getElementById('cloudEmail').value=state.cloudEmail||'';document.getElementById('cloudModal').classList.add('open')}function closeCloud(){document.getElementById('cloudModal').classList.remove('open')}
+function friendlyFirebaseError(e){const code=e?.code||'';return ({'auth/email-already-in-use':'このメールアドレスはすでに登録されています。','auth/invalid-email':'メールアドレスの形式が正しくありません。','auth/weak-password':'パスワードは6文字以上にしてください。','auth/invalid-credential':'メールアドレスまたはパスワードが正しくありません。','auth/user-not-found':'アカウントが見つかりません。','auth/wrong-password':'パスワードが正しくありません。','auth/operation-not-allowed':'Firebaseでメール/パスワード認証を有効にしてください。','permission-denied':'Firestoreのアクセス権限がありません。セキュリティルールを確認してください。','auth/network-request-failed':'通信に失敗しました。ネットワーク接続を確認してください。'}[code]||e?.message||'不明なエラーが発生しました。')}
+async function ensureFirebase(){if(fb.mods&&fb.app)return;const appMod=await import('https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js'),authMod=await import('https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js'),dbMod=await import('https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js');fb.mods={...authMod,...dbMod};fb.app=appMod.initializeApp(FIREBASE_CONFIG);fb.auth=authMod.getAuth(fb.app);fb.db=dbMod.getFirestore(fb.app);authMod.onAuthStateChanged(fb.auth,async u=>{fb.user=u;setCloudState(!!u,u?.email);if(u){document.getElementById('cloudMessage').textContent=`${u.email} でログイン中です。`;await cloudPull(true)}})}
+async function cloudSignIn(register){try{await ensureFirebase();const email=document.getElementById('cloudEmail').value.trim(),pw=document.getElementById('cloudPassword').value;if(!email||!pw)throw new Error('メールアドレスとパスワードを入力してください。');state.cloudEmail=email;saveState(false);if(register)await fb.mods.createUserWithEmailAndPassword(fb.auth,email,pw);else await fb.mods.signInWithEmailAndPassword(fb.auth,email,pw);document.getElementById('cloudMessage').textContent=register?'アカウントを作成しました。':'ログインしました。';toast(register?'アカウントを作成しました':'ログインしました')}catch(e){document.getElementById('cloudMessage').textContent='エラー: '+friendlyFirebaseError(e)}}
+async function cloudPush(silent=false){try{await ensureFirebase();if(!fb.auth.currentUser)throw new Error('先にログインしてください。');const copy=structuredClone(state);delete copy.cloudEmail;await fb.mods.setDoc(fb.mods.doc(fb.db,'users',fb.auth.currentUser.uid),{weightTracker:copy,weightTrackerUpdatedAt:fb.mods.serverTimestamp()},{merge:true});if(!silent){document.getElementById('cloudMessage').textContent='クラウドへ保存しました。';toast('クラウドへ保存しました')}}catch(e){if(!silent)document.getElementById('cloudMessage').textContent='エラー: '+friendlyFirebaseError(e)}}
+async function cloudPull(silent=false){try{await ensureFirebase();if(!fb.auth.currentUser)throw new Error('先にログインしてください。');const snap=await fb.mods.getDoc(fb.mods.doc(fb.db,'users',fb.auth.currentUser.uid));const remote=snap.exists()?snap.data().weightTracker:null;if(remote?.settings&&remote?.months){const email=state.cloudEmail;state=remote;state.cloudEmail=email;saveState(false);renderAll();if(!silent){document.getElementById('cloudMessage').textContent='クラウドのデータを読み込みました。';toast('クラウドから取得しました')}}else{document.getElementById('cloudMessage').textContent='クラウドに体重管理データがないため、現在のデータを保存します。';await cloudPush(silent)}}catch(e){if(!silent)document.getElementById('cloudMessage').textContent='エラー: '+friendlyFirebaseError(e)}}
+async function cloudLogout(){try{if(fb.auth)await fb.mods.signOut(fb.auth);document.getElementById('cloudPassword').value='';document.getElementById('cloudMessage').textContent='ログアウトしました。';toast('ログアウトしました')}catch(e){document.getElementById('cloudMessage').textContent='エラー: '+friendlyFirebaseError(e)}}
+function setCloudState(on,email=''){document.getElementById('cloudDot').classList.toggle('online',on);document.getElementById('cloudText').textContent=on?`同期中 ${email}`:'端末内保存';document.getElementById('cloudLogin').style.display=on?'none':'';document.getElementById('cloudRegister').style.display=on?'none':'';document.getElementById('cloudSave').style.display=on?'':'none';document.getElementById('cloudLoad').style.display=on?'':'none';document.getElementById('cloudLogoutBtn').style.display=on?'':'none';document.getElementById('cloudEmail').disabled=on;document.getElementById('cloudPassword').disabled=on}
+renderAll();ensureFirebase().catch(e=>{document.getElementById('cloudMessage').textContent='Firebase初期化エラー: '+friendlyFirebaseError(e)});
+</script>
+</body>
+</html>
+
+image(52).png
+何処で設定すればいい？
+
+この画面の左メニューから、次の2か所を設定します。
+
+1. メール・パスワード認証を有効にする
+左側の 「セキュリティ」 をクリックします。
+
+その中の、
+
+Authentication → 始める → ログイン方法
+
+へ進み、**「メール／パスワード」**を開いて有効にしてください。Firebaseでは、メールアドレスとパスワードを使う前に、このログイン方法をコンソールで有効化する必要があります。
+
+設定は次の状態で大丈夫です。
+
+メール／パスワード：有効
+メールリンク：無効
+2. データ保存用のFirestoreを作る
+左側の 「Database と Storage」 をクリックして、
+
+Firestore Database → データベースを作成
+
+へ進みます。
+
+作成時は、通常の Standard edition を選び、データベースIDは、
+
+(default)
+のままで構いません。WebアプリのFirebase SDKは、通常このデフォルトデータベースへ接続します。
+
+ロケーションは、日本で使用するなら候補にあれば、
+
+asia-northeast1（東京）
+など、日本に近い場所を選んでください。
+
+3. Firestoreのルールを設定する
+Firestoreを作成した後、
+
+Firestore Database → ルール
+
+を開き、次の内容へ変更して「公開」を押してください。
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+  }
+}
+この設定では、ログイン中のユーザーが、自分のUIDと同じ名前のデータだけを読み書きできます。Firebase公式も、AuthenticationとUIDを使ったユーザー単位のルールを案内しています。
+
+設定後の操作
+家計簿・体重管理アプリへ戻り、次の順番で操作します。
+
+初めて使う場合は「新規登録」
+
+メールアドレスとパスワードを入力
+
+登録後にログイン
+
+データを入力
+
+「クラウドへ保存」
+
+別のPCやスマホで同じアカウントにログイン
+
+「クラウドから取得」
+
+まずは左側の 「セキュリティ」→「Authentication」 から進めてください。
+
+
+これで体重管理もいける？
+
+はい、同じFirebase設定で体重管理も使えます。
+
+家計簿と体重管理は、同じユーザーのFirestoreドキュメント内に別々の項目として保存されます。
+
+users
+└─ ユーザーUID
+   ├─ fixedCosts・months …… 家計簿
+   └─ weightTracker …… 体重管理
+そのため、現在案内したFirestoreルールで両方に対応できます。
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+  }
+}
+体重管理側では次の設定を使っています。
+
+Firebaseプロジェクト：kakeiboapp-810ef
+
+Webアプリ：weighttracker
+
+保存先：users/{ログインユーザーのUID}
+
+保存項目：weightTracker
+
+利用手順
+Firebaseでメール／パスワード認証を有効にする
+
+Firestore Databaseを作成する
+
+上記のルールを公開する
+
+体重管理アプリをGitHub Pagesへアップロードする
+
+家計簿と同じメールアドレス・パスワードでログインする
+
+ただし、家計簿で既にアカウントを作成している場合、体重管理側で再び「新規登録」を押す必要はありません。**そのまま「ログイン」**を押してください。
+
+家計簿と体重管理で同じアカウントを使っても、データが上書きされないように分けて保存されています。
+
+
+体重管理はまだできない
+
+了解です。現状だと「体重管理用のFirebase設定は入っているが、実際にどこで止まっているか」が分からないので、次を確認してください。
+
+まず体重管理アプリを開いて、右上のクラウド同期からログインしてください。家計簿ですでに作ったアカウントなら、新規登録ではなくログインです。
+
+ログイン後に表示されるエラー文を確認してください。特に多いのは次の3つです。
+
+Firebaseでメール/パスワード認証を有効にしてください
+
+Firestoreのアクセス権限がありません
+
+メールアドレスまたはパスワードが正しくありません
+
+また、GitHub Pagesには前の体重管理HTMLではなく、修正版を index.html としてアップロードする必要があります。
+
+weight_tracker_index.html
+
+アップロード先は、体重管理用リポジトリの直下です。
+
+リポジトリ
+└─ index.html
+今GitHubにある古い index.html を削除するか、修正版の内容で上書きしてください。反映後は、ブラウザで Ctrl + F5 を押してキャッシュを無視して再読み込みします。
+
+なお、Firestoreのルールはこれで家計簿と体重管理の両方に対応します。
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+  }
+}
+体重管理アプリのログイン画面下に出ているエラー文のスクリーンショットを送ってください。そこが分かれば原因を絞れます。
+
+
+
+image(53).png
+変動費の項目に入力するたびに出てウザイ
+
+1m 2s考えました
+これはGoogle Chromeのパスワードマネージャーが、変動費の「金額欄」とクラウド同期の「パスワード欄」を同じログインフォームだと誤認しているのが原因です。
+
+誤認されないように修正しました。
+
+index_password_prompt_fixed.html
+
+ZIP版をダウンロード
+
+GitHubには、修正版をアップロードしたうえでファイル名を index.html にしてください。
+
+kakeiboapp
+└─ index.html
+変更点は以下です。
+
+変動費・固定費の入力欄をログイン情報として認識しないよう設定
+
+金額欄に専用の名前を設定
+
+パスワード管理拡張機能向けの除外設定を追加
+
+Firebaseのメール・パスワード欄を独立したログインフォームに分離
+
+削除ボタンなどがフォーム送信扱いにならないよう修正
+
+アップロード後は、Chromeで Ctrl + F5 を押して強制再読み込みしてください。これで変動費を入力するたびに「パスワードを保存しますか？」が出る現象は解消されるはずです。
+
+
+
+家計簿アプリで収入も設定できるようにしたい
+
+家計簿アプリに 「収入設定」 を追加しました。
+
+index.html
+
+ZIP版をダウンロード
+
+追加した機能は以下です。
+
+毎月自動反映される収入を設定
+
+給与、副業、年金・給付、家族から、その他の分類
+
+収入項目の追加・編集・削除
+
+設定収入と今月だけの収入を合算
+
+収入設定もPC・スマホ間でクラウド同期
+
+CSVに収入情報も出力
+
+月を初期化しても収入設定は維持
+
+GitHubの現在の index.html を、今回のファイルで上書きしてください。アップロード後は Ctrl + F5 で更新します。
+
+
+
+項目入力中一定時間がたつと入力状態が解除されて使いにくい
+
+原因は、クラウドのリアルタイム同期が一定時間後に画面全体を再描画し、入力欄のフォーカスが外れていたためです。入力中は再描画しないように修正しました。
+
+index_focus_fixed.html
+
+ZIP版
+
+GitHubへアップロードする際は、ファイル名を index.html にして既存ファイルを上書きしてください。
+
+修正後の動作は次のようになります。
+
+入力途中でフォーカスが外れない
+
+入力内容はこれまでどおり端末とクラウドへ自動保存
+
+別端末の変更は、ログイン時または「クラウドから取得」で反映
+
+入力欄がクラウド更新で突然書き換わることも防止
+
+アップロード後は Ctrl + F5 で強制再読み込みしてください。
+
+
+
+index_focus_fixed.html
+
+
+
+
+
+index_focus_fixed.html
+
+
+
+
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MONEY NOTE - 家計管理</title>
+<!-- v2.2: recurring income settings -->
+<style>
+:root{--bg:#f4f7fb;--panel:#fff;--ink:#172033;--muted:#778198;--line:#e5eaf2;--accent:#5468ff;--good:#1aa67a;--bad:#e25454;--shadow:0 14px 35px rgba(30,48,90,.08)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,"Noto Sans JP",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink)}button,input,select{font:inherit}button{cursor:pointer}.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}aside{background:#172033;color:#fff;padding:28px 20px;position:sticky;top:0;height:100vh}.brand{font-size:21px;font-weight:800;margin-bottom:30px}.brand small{display:block;font-size:11px;font-weight:500;color:#9da8c3;margin-top:5px}.nav{display:grid;gap:8px}.nav button{border:0;background:transparent;color:#c8d0e3;padding:12px 14px;border-radius:12px;text-align:left}.nav button:hover,.nav button.active{background:#2a3653;color:#fff}.side-foot{position:absolute;bottom:24px;left:20px;right:20px;font-size:12px;color:#97a2bc;line-height:1.65}.sync-badge{display:inline-flex;align-items:center;gap:6px;margin-top:8px}.sync-dot{width:8px;height:8px;border-radius:50%;background:#8893aa}.sync-dot.on{background:#38d39f}main{padding:30px;max-width:1500px;width:100%;margin:auto}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:24px}.topbar h1{font-size:28px;margin:0 0 4px}.topbar p{margin:0;color:var(--muted);font-size:14px}.month-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.month-tools button,.secondary{border:1px solid var(--line);background:#fff;padding:10px 13px;border-radius:11px;color:var(--ink)}.month-label{font-weight:800;min-width:110px;text-align:center}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:18px}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}.card{padding:19px}.card .label{font-size:13px;color:var(--muted);margin-bottom:9px}.card .value{font-size:25px;font-weight:850}.card .sub{font-size:12px;color:var(--muted);margin-top:7px}.good{color:var(--good)}.bad{color:var(--bad)}.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(330px,.75fr);gap:18px}.panel{overflow:hidden}.panel-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}.panel-head h2{font-size:16px;margin:0}.panel-body{padding:20px}.income-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:18px}.field label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}.field input,.field select,.modal input,.modal select{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px 12px;background:#fbfcfe;color:var(--ink);outline:none}.primary{border:0;border-radius:11px;background:var(--accent);color:#fff;padding:10px 14px;font-weight:750}.danger{border:0;background:#fff1f1;color:#bf3e3e;padding:8px 10px;border-radius:9px}table{width:100%;border-collapse:collapse}th{text-align:left;font-size:12px;color:var(--muted);padding:10px;border-bottom:1px solid var(--line)}td{padding:8px 6px;border-bottom:1px solid #f0f2f7}td input,td select{width:100%;border:1px solid transparent;background:transparent;padding:8px;border-radius:8px}.amount{text-align:right}.empty{text-align:center;color:var(--muted);padding:30px}.fixed-summary{background:#f6f8ff;border:1px solid #e4e8ff;border-radius:13px;padding:13px 15px;margin-bottom:16px;display:flex;justify-content:space-between;gap:12px;align-items:center}.fixed-summary b{font-size:17px}.chart-wrap{display:flex;justify-content:center;align-items:center;min-height:275px}.legend{display:grid;gap:9px;margin-top:10px;max-height:280px;overflow:auto}.legend-row{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;font-size:12px}.dot{width:10px;height:10px;border-radius:3px}.progress{height:9px;background:#edf0f6;border-radius:99px;overflow:hidden;margin-top:11px}.progress i{display:block;height:100%;background:linear-gradient(90deg,#5468ff,#7c8aff);width:0}.toast{position:fixed;right:24px;bottom:24px;background:#172033;color:#fff;padding:12px 16px;border-radius:12px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:20}.toast.show{opacity:1;transform:none}.modal-bg{position:fixed;inset:0;background:rgba(16,25,45,.52);display:none;align-items:center;justify-content:center;padding:18px;z-index:10}.modal-bg.show{display:flex}.modal{background:#fff;border-radius:18px;width:min(900px,100%);max-height:90vh;overflow:auto;box-shadow:0 24px 80px rgba(0,0,0,.22)}.modal.small{width:min(620px,100%)}.modal-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.modal-head h2{margin:0;font-size:18px}.modal-body{padding:20px}.close{border:0;background:#eef1f6;border-radius:9px;padding:8px 11px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.help{font-size:13px;color:var(--muted);line-height:1.7}.sync-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.status-box{padding:12px;border-radius:12px;background:#f5f7fb;margin-bottom:14px;font-size:13px;line-height:1.6}.divider{height:1px;background:var(--line);margin:18px 0}
+@media(max-width:1050px){.app{grid-template-columns:1fr}aside{display:none}.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}main{padding:20px}}@media(max-width:620px){main{padding:14px}.topbar{align-items:flex-start;flex-direction:column}.cards{grid-template-columns:1fr 1fr;gap:10px}.card{padding:14px}.card .value{font-size:19px}.income-grid,.sync-grid{grid-template-columns:1fr}.panel-body{padding:12px}.table-scroll{overflow:auto}table{min-width:680px}.fixed-summary{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app"><aside><div class="brand">MONEY NOTE<small>手取り家計管理アプリ</small></div><div class="nav"><button class="active">▦　月間ダッシュボード</button><button id="incomeSide">＋　収入設定</button><button id="fixedSide">⚙　固定費設定</button><button id="syncSide">☁　クラウド同期</button><button id="exportSide">⇩　CSVを書き出す</button><button id="resetSide">↺　今月を初期化</button></div><div class="side-foot"><div id="saveText">この端末に自動保存中</div><div class="sync-badge"><i id="syncDot" class="sync-dot"></i><span id="syncText">クラウド未接続</span></div></div></aside>
+<main><div class="topbar"><div><h1>家計ダッシュボード</h1><p>毎月の収入と固定費を設定から一括管理し、自動で集計します。</p></div><div class="month-tools"><button id="prev">‹</button><div class="month-label" id="monthLabel"></div><button id="next">›</button><button id="today" class="secondary">今月</button><button id="incomeTop" class="secondary">収入設定</button><button id="fixedTop" class="secondary">固定費設定</button><button id="syncTop" class="secondary">同期</button></div></div>
+<div class="cards"><div class="card"><div class="label">手取り収入</div><div class="value" id="netIncome">¥0</div><div class="sub" id="incomeDetail"></div></div><div class="card"><div class="label">支出・貯金 合計</div><div class="value" id="expenseTotal">¥0</div><div class="sub" id="expenseCount"></div></div><div class="card"><div class="label">残り使えるお金</div><div class="value good" id="remaining">¥0</div><div class="sub" id="remainingRate"></div></div><div class="card"><div class="label">収入に占める支出率</div><div class="value" id="spendRate">0%</div><div class="progress"><i id="spendBar"></i></div></div></div>
+<div class="grid"><section class="panel"><div class="panel-head"><h2>今月の収入調整・変動費入力</h2><div><button class="secondary" id="copyPrev">前月からコピー</button> <button class="primary" id="addRow">＋ 変動費を追加</button></div></div><div class="panel-body"><div class="fixed-summary"><div><div class="help">毎月自動反映される設定収入</div><b id="recurringIncomeTotal">¥0</b></div><button class="secondary" id="incomeInline">内容を編集</button></div><div class="income-grid"><div class="field"><label>今月の給料（額面）</label><input id="salary" name="gross_salary" type="number" min="0" step="1000" autocomplete="off" data-form-type="other" data-1p-ignore data-lpignore="true"></div><div class="field"><label>手取り率</label><select id="takeRate"><option value="0.7">70%</option><option value="0.75">75%</option><option value="0.8">80%</option><option value="0.85">85%</option><option value="0.9">90%</option><option value="1">100%</option></select></div><div class="field"><label>今月のみの副業・その他収入</label><input id="extraIncome" name="extra_income" type="number" min="0" step="1000" autocomplete="off" data-form-type="other" data-1p-ignore data-lpignore="true"></div></div><div class="fixed-summary"><div><div class="help">今月に自動反映される固定費</div><b id="fixedTotal">¥0</b></div><button class="secondary" id="fixedInline">内容を編集</button></div><div class="table-scroll"><table><thead><tr><th style="width:24%">項目</th><th style="width:17%">金額</th><th style="width:18%">分類</th><th>メモ</th><th style="width:56px"></th></tr></thead><tbody id="rows"></tbody></table></div></div></section><section class="panel"><div class="panel-head"><h2>支出内訳</h2><button class="secondary" id="export">CSV</button></div><div class="panel-body"><div class="chart-wrap"><canvas id="chart" width="270" height="270"></canvas></div><div class="legend" id="legend"></div></div></section></div></main></div>
+<div class="modal-bg" id="incomeModal"><div class="modal"><div class="modal-head"><h2>収入設定</h2><button class="close" data-close="incomeModal">閉じる</button></div><div class="modal-body"><p class="help">ここで登録した手取り収入は、すべての月に自動反映されます。毎月金額が変わる給与や臨時収入は、月間ダッシュボード側に入力してください。</p><div class="table-scroll"><table><thead><tr><th>収入項目</th><th>月額（手取り）</th><th>分類</th><th>メモ</th><th></th></tr></thead><tbody id="incomeRows"></tbody></table></div><div class="modal-actions"><button class="secondary" id="addIncome">＋ 収入を追加</button><button class="primary" data-close="incomeModal">完了</button></div></div></div></div>
+<div class="modal-bg" id="fixedModal"><div class="modal"><div class="modal-head"><h2>固定費設定</h2><button class="close" data-close="fixedModal">閉じる</button></div><div class="modal-body"><p class="help">ここで登録した項目はすべての月に自動反映されます。月によって金額が変わる項目は変動費に登録してください。</p><div class="table-scroll"><table><thead><tr><th>項目</th><th>月額</th><th>分類</th><th>メモ</th><th></th></tr></thead><tbody id="fixedRows"></tbody></table></div><div class="modal-actions"><button class="secondary" id="addFixed">＋ 固定費を追加</button><button class="primary" data-close="fixedModal">完了</button></div></div></div></div>
+<div class="modal-bg" id="syncModal"><div class="modal small"><div class="modal-head"><h2>クラウド同期</h2><button class="close" data-close="syncModal">閉じる</button></div><div class="modal-body"><div id="syncStatus" class="status-box">Firebaseへ接続中です。</div><p class="help">メールアドレスとパスワードだけでログインできます。同じアカウントでログインしたスマホとPCのデータが同期されます。</p><form id="authForm" autocomplete="on" onsubmit="return false"><div class="sync-grid"><div class="field"><label>メールアドレス</label><input id="syncEmail" name="username" type="email" autocomplete="username"></div><div class="field"><label>パスワード（6文字以上）</label><input id="syncPassword" name="password" type="password" autocomplete="current-password"></div></div></form><div class="modal-actions" style="justify-content:flex-start;flex-wrap:wrap"><button class="secondary" id="register" type="button">新規登録</button><button class="primary" id="login" type="button">ログイン</button><button class="danger" id="logout" type="button" style="display:none">ログアウト</button><button class="secondary" id="saveCloud" type="button" style="display:none">今のデータを保存</button><button class="secondary" id="loadCloud" type="button" style="display:none">クラウドから取得</button></div><div class="divider"></div><p class="help"><b>スマホで使うには：</b>GitHub Pagesの同じURLを開き、同じメールアドレスとパスワードでログインしてください。ログイン中は入力内容が自動保存されます。</p></div></div></div>
+<div class="toast" id="toast"></div>
+<script type="module">
+const yen=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0}).format(Math.round(n||0));
+const variableCategories=['食費','日用品','交通','娯楽','美容・衣服','医療','貯金','その他'];
+const incomeCategories=['給与','副業','年金・給付','家族から','その他'];
+const fixedCategories=['住居','光熱・通信','返済','保険','サブスク','交通','その他'];
+const palette=['#5468ff','#21a67a','#f0a33a','#e45d77','#805ad5','#35a7c8','#eb6f3a','#6d8799','#a3adbd','#d2a54a','#36a18b'];
+const FIREBASE_CONFIG={apiKey:'AIzaSyBLG2gWcGwpSQhbsJErw0BANbALbfWDXAY',authDomain:'kakeiboapp-810ef.firebaseapp.com',projectId:'kakeiboapp-810ef',storageBucket:'kakeiboapp-810ef.firebasestorage.app',messagingSenderId:'692602496439',appId:'1:692602496439:web:a5ad953b55ade6718d7432',measurementId:'G-VLDXP9DF50'};
+const defaultFixed=[['家賃',87000,'住居',''],['奨学金',15386,'返済',''],['電気・ガス',15000,'光熱・通信',''],['ジム',8200,'サブスク',''],['定期',6938,'交通',''],['NURO',3850,'光熱・通信',''],['保険',3800,'保険',''],['Adobe',3380,'サブスク',''],['DAZN',3200,'サブスク',''],['ChatGPT',2860,'サブスク',''],['Netflix',2290,'サブスク',''],['水道',3000,'光熱・通信',''],['YouTube',1280,'サブスク',''],['Amazon Prime',600,'サブスク','']];
+let cursor=new Date();cursor.setDate(1);let data;let recurringIncomes=readJSON('money-note-income-v2',null)||[];let fixedCosts=readJSON('money-note-fixed-v2',null)||defaultFixed.map((x,i)=>({id:Date.now()+i,name:x[0],amount:x[1],category:x[2],memo:x[3]}));let cloud={auth:null,db:null,user:null,saveTimer:null,unsub:null};
+const monthKey=()=>`${cursor.getFullYear()}-${String(cursor.getMonth()+1).padStart(2,'0')}`;const localKey=()=>`money-note-v2-${monthKey()}`;
+function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function fresh(){return{salary:340000,takeRate:.8,extraIncome:0,rows:[]}}
+function load(){data=readJSON(localKey(),null)||migrateLegacy()||fresh();renderAll()}
+function migrateLegacy(){const old=readJSON(`money-note-${monthKey()}`,null);if(!old)return null;const fixed=old.rows?.filter(r=>r.category==='固定費')||[];if(fixed.length&&!localStorage.getItem('money-note-fixed-migrated')){fixedCosts=fixed.map((r,i)=>({...r,id:Date.now()+i,category:'その他'}));localStorage.setItem('money-note-fixed-v2',JSON.stringify(fixedCosts));localStorage.setItem('money-note-fixed-migrated','1')}return{salary:old.salary,takeRate:old.takeRate,extraIncome:old.extraIncome,rows:(old.rows||[]).filter(r=>r.category!=='固定費')};}
+function save({cloudSync=true}={}){localStorage.setItem(localKey(),JSON.stringify(data));localStorage.setItem('money-note-fixed-v2',JSON.stringify(fixedCosts));localStorage.setItem('money-note-income-v2',JSON.stringify(recurringIncomes));updateSummary();if(cloudSync)scheduleCloudSave()}
+function toast(s){const t=document.querySelector('#toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function renderAll(){document.querySelector('#monthLabel').textContent=`${cursor.getFullYear()}年 ${cursor.getMonth()+1}月`;salary.value=data.salary;takeRate.value=data.takeRate;extraIncome.value=data.extraIncome;renderRows();renderIncomeRows();renderFixedRows();updateSummary()}
+function rowHTML(r,cats){const ignore=`autocomplete="off" data-form-type="other" data-1p-ignore data-lpignore="true"`;return `<td><input ${ignore} name="expense_name_${r.id}" data-k="name" value="${esc(r.name)}" placeholder="例：食費"></td><td><input ${ignore} name="expense_amount_${r.id}" class="amount" data-k="amount" type="number" inputmode="numeric" min="0" value="${r.amount||0}"></td><td><select name="expense_category_${r.id}" autocomplete="off" data-form-type="other" data-k="category">${cats.map(c=>`<option ${c===r.category?'selected':''}>${c}</option>`).join('')}</select></td><td><input ${ignore} name="expense_memo_${r.id}" data-k="memo" value="${esc(r.memo||'')}" placeholder="任意メモ"></td><td><button class="danger" type="button">削除</button></td>`}
+function bindRow(tr,r,list,rerender){tr.querySelectorAll('[data-k]').forEach(el=>el.addEventListener('input',()=>{r[el.dataset.k]=el.dataset.k==='amount'?Number(el.value):el.value;save()}));tr.querySelector('.danger').onclick=()=>{const i=list.findIndex(x=>x.id===r.id);if(i>=0)list.splice(i,1);save();rerender()}}
+function renderRows(){rows.innerHTML='';if(!data.rows.length){rows.innerHTML='<tr><td colspan="5" class="empty">変動費はまだありません。</td></tr>';return}data.rows.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=rowHTML(r,variableCategories);bindRow(tr,r,data.rows,renderRows);rows.appendChild(tr)})}
+function renderIncomeRows(){incomeRows.innerHTML='';if(!recurringIncomes.length){incomeRows.innerHTML='<tr><td colspan="5" class="empty">設定収入はまだありません。</td></tr>';return}recurringIncomes.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=rowHTML(r,incomeCategories);bindRow(tr,r,recurringIncomes,renderIncomeRows);incomeRows.appendChild(tr)})}
+function renderFixedRows(){fixedRows.innerHTML='';if(!fixedCosts.length){fixedRows.innerHTML='<tr><td colspan="5" class="empty">固定費はまだありません。</td></tr>';return}fixedCosts.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=rowHTML(r,fixedCategories);bindRow(tr,r,fixedCosts,renderFixedRows);fixedRows.appendChild(tr)})}
+function allExpenses(){return [...fixedCosts.map(x=>({...x,type:'固定費'})),...data.rows.map(x=>({...x,type:'変動費'}))]}
+function updateSummary(){const recurring=recurringIncomes.reduce((s,r)=>s+(Number(r.amount)||0),0);const net=recurring+Number(data.salary)*Number(data.takeRate)+Number(data.extraIncome);const fx=fixedCosts.reduce((s,r)=>s+(Number(r.amount)||0),0);const all=allExpenses();const exp=all.reduce((s,r)=>s+(Number(r.amount)||0),0);const rem=net-exp;const rate=net?exp/net*100:0;netIncome.textContent=yen(net);incomeDetail.textContent=`設定収入 ${yen(recurring)} ＋ 今月給与 ${yen(Number(data.salary)*Number(data.takeRate))} ＋ その他 ${yen(data.extraIncome)}`;recurringIncomeTotal.textContent=yen(recurring);expenseTotal.textContent=yen(exp);expenseCount.textContent=`固定費 ${yen(fx)}・変動費 ${yen(exp-fx)}`;fixedTotal.textContent=yen(fx);remaining.textContent=yen(rem);remaining.className='value '+(rem>=0?'good':'bad');remainingRate.textContent=net?`手取りの ${Math.max(0,rem/net*100).toFixed(1)}%`:'収入を入力してください';spendRate.textContent=`${rate.toFixed(1)}%`;spendBar.style.width=`${Math.min(100,rate)}%`;drawChart(all)}
+function drawChart(all){const sums={};all.forEach(r=>{const a=Number(r.amount)||0;if(a>0){const key=`${r.type}：${r.category}`;sums[key]=(sums[key]||0)+a}});const entries=Object.entries(sums).sort((a,b)=>b[1]-a[1]);const total=entries.reduce((s,x)=>s+x[1],0),ctx=chart.getContext('2d');ctx.clearRect(0,0,270,270);if(!total){ctx.fillStyle='#778198';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText('支出を入力すると表示されます',135,138);legend.innerHTML='';return}let start=-Math.PI/2;entries.forEach(([,v],i)=>{const angle=v/total*Math.PI*2;ctx.beginPath();ctx.moveTo(135,135);ctx.arc(135,135,112,start,start+angle);ctx.closePath();ctx.fillStyle=palette[i%palette.length];ctx.fill();start+=angle});ctx.beginPath();ctx.arc(135,135,65,0,Math.PI*2);ctx.fillStyle='white';ctx.fill();ctx.fillStyle='#778198';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText('支出合計',135,127);ctx.fillStyle='#172033';ctx.font='bold 18px sans-serif';ctx.fillText(yen(total),135,151);legend.innerHTML=entries.map(([c,v],i)=>`<div class="legend-row"><i class="dot" style="background:${palette[i%palette.length]}"></i><span>${c} (${(v/total*100).toFixed(1)}%)</span><span>${yen(v)}</span></div>`).join('')}
+function exportCSV(){const lines=[['月','種別','項目','金額','分類','メモ'],...recurringIncomes.map(r=>[monthKey(),'設定収入',r.name,r.amount,r.category,r.memo]),[monthKey(),'月次収入','今月給与（手取り）',Number(data.salary)*Number(data.takeRate),'給与',''],[monthKey(),'月次収入','その他収入',data.extraIncome,'その他',''],...fixedCosts.map(r=>[monthKey(),'固定費',r.name,r.amount,r.category,r.memo]),...data.rows.map(r=>[monthKey(),'変動費',r.name,r.amount,r.category,r.memo])];const csv='\ufeff'+lines.map(a=>a.map(x=>`"${String(x??'').replaceAll('"','""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`家計簿_${monthKey()}.csv`;a.click();URL.revokeObjectURL(a.href)}
+function openModal(id){document.getElementById(id).classList.add('show')}document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).classList.remove('show'));document.querySelectorAll('.modal-bg').forEach(m=>m.onclick=e=>{if(e.target===m)m.classList.remove('show')});
+salary.oninput=e=>{data.salary=Number(e.target.value);save()};takeRate.onchange=e=>{data.takeRate=Number(e.target.value);save()};extraIncome.oninput=e=>{data.extraIncome=Number(e.target.value);save()};addRow.onclick=()=>{data.rows.push({id:Date.now(),name:'',amount:0,category:'その他',memo:''});save();renderRows()};addIncome.onclick=()=>{recurringIncomes.push({id:Date.now(),name:'',amount:0,category:'その他',memo:''});save();renderIncomeRows()};addFixed.onclick=()=>{fixedCosts.push({id:Date.now(),name:'',amount:0,category:'その他',memo:''});save();renderFixedRows()};prev.onclick=()=>{cursor.setMonth(cursor.getMonth()-1);load()};next.onclick=()=>{cursor.setMonth(cursor.getMonth()+1);load()};today.onclick=()=>{cursor=new Date();cursor.setDate(1);load()};copyPrev.onclick=()=>{const p=new Date(cursor);p.setMonth(p.getMonth()-1);const src=readJSON(`money-note-v2-${p.getFullYear()}-${String(p.getMonth()+1).padStart(2,'0')}`,null);if(!src)return toast('前月のデータがありません');data={salary:src.salary,takeRate:src.takeRate,extraIncome:0,rows:src.rows.map((r,i)=>({...r,id:Date.now()+i,memo:''}))};save();renderAll();toast('前月の変動費をコピーしました')};
+[['incomeSide','incomeModal'],['incomeTop','incomeModal'],['incomeInline','incomeModal'],['fixedSide','fixedModal'],['fixedTop','fixedModal'],['fixedInline','fixedModal'],['syncSide','syncModal'],['syncTop','syncModal']].forEach(([b,m])=>document.getElementById(b).onclick=()=>openModal(m));['export','exportSide'].forEach(s=>document.getElementById(s).onclick=exportCSV);resetSide.onclick=()=>{if(confirm('表示中の月の収入・変動費を初期化しますか？\n収入設定と固定費設定は残ります。')){data=fresh();save();renderAll();toast('今月を初期化しました')}};
+function collectMonths(){const months={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k?.startsWith('money-note-v2-'))months[k.replace('money-note-v2-','')]=readJSON(k,fresh())}months[monthKey()]=data;return months}
+async function initFirebase(){try{const appMod=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');const authMod=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');const fsMod=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');const app=appMod.initializeApp(FIREBASE_CONFIG);cloud.auth=authMod.getAuth(app);cloud.db=fsMod.getFirestore(app);cloud.mods={...authMod,...fsMod};authMod.onAuthStateChanged(cloud.auth,u=>{cloud.user=u;updateAuthUI();if(u)startCloud()})}catch(e){setSyncUI(`Firebaseの初期化に失敗しました：${friendlyError(e)}`)}}
+function setSyncUI(msg,on=false){syncStatus.textContent=msg;syncText.textContent=on?'クラウド同期中':'クラウド未接続';syncDot.classList.toggle('on',on);saveText.textContent=on?'端末とクラウドに自動保存中':'この端末に自動保存中'}function updateAuthUI(){const on=!!cloud.user;logout.style.display=on?'inline-block':'none';login.style.display=on?'none':'inline-block';register.style.display=on?'none':'inline-block';saveCloud.style.display=on?'inline-block':'none';loadCloud.style.display=on?'inline-block':'none';syncEmail.disabled=on;syncPassword.disabled=on;setSyncUI(on?`${cloud.user.email} でログイン中です。同じアカウントの端末と同期します。`:'メールアドレスとパスワードでログインしてください。',on)}
+function friendlyError(e){const code=e?.code||'';return ({'auth/email-already-in-use':'このメールアドレスはすでに登録されています。','auth/invalid-email':'メールアドレスの形式が正しくありません。','auth/weak-password':'パスワードは6文字以上にしてください。','auth/invalid-credential':'メールアドレスまたはパスワードが正しくありません。','auth/user-not-found':'アカウントが見つかりません。','auth/wrong-password':'パスワードが正しくありません。','auth/operation-not-allowed':'Firebaseでメール/パスワード認証を有効にしてください。','permission-denied':'Firestoreのアクセス権限がありません。セキュリティルールを確認してください。'}[code]||e?.message||'不明なエラーが発生しました。')}
+register.onclick=async()=>{if(!cloud.auth)return toast('Firebaseへの接続を確認してください');try{await cloud.mods.createUserWithEmailAndPassword(cloud.auth,syncEmail.value.trim(),syncPassword.value);toast('アカウントを作成しました')}catch(e){toast(friendlyError(e))}};login.onclick=async()=>{if(!cloud.auth)return toast('Firebaseへの接続を確認してください');try{await cloud.mods.signInWithEmailAndPassword(cloud.auth,syncEmail.value.trim(),syncPassword.value);toast('ログインしました')}catch(e){toast(friendlyError(e))}};logout.onclick=async()=>{cloud.unsub?.();await cloud.mods.signOut(cloud.auth);syncPassword.value='';setSyncUI('ログアウトしました。');toast('ログアウトしました')};saveCloud.onclick=async()=>{if(!cloud.user)return toast('先にログインしてください');await saveCloudNow()};loadCloud.onclick=async()=>{if(!cloud.user)return toast('先にログインしてください');try{const {doc,getDoc}=cloud.mods;const snap=await getDoc(doc(cloud.db,'users',cloud.user.uid));if(!snap.exists())return toast('クラウドデータがありません');applyRemote(snap.data());toast('クラウドから取得しました')}catch(e){toast(friendlyError(e))}};
+async function saveCloudNow(){try{const {doc,setDoc,serverTimestamp}=cloud.mods;await setDoc(doc(cloud.db,'users',cloud.user.uid),{recurringIncomes,fixedCosts,months:collectMonths(),updatedAt:serverTimestamp()},{merge:true});syncText.textContent='同期済み';toast('クラウドへ保存しました')}catch(e){syncText.textContent='同期エラー';toast(friendlyError(e))}}
+async function startCloud(){try{const {doc,getDoc,setDoc,serverTimestamp}=cloud.mods;const ref=doc(cloud.db,'users',cloud.user.uid);const snap=await getDoc(ref);if(snap.exists()){applyRemote(snap.data());toast('クラウドデータを読み込みました')}else{await setDoc(ref,{recurringIncomes,fixedCosts,months:collectMonths(),updatedAt:serverTimestamp()});toast('この端末のデータをクラウドへ保存しました')}/* リアルタイム監視は入力中の再描画でフォーカスが外れるため使用しない。入力内容は自動保存され、別端末ではログイン時または「クラウドから取得」で反映する。 */cloud.unsub?.();cloud.unsub=null}catch(e){setSyncUI(`同期を開始できません：${friendlyError(e)}`);toast(friendlyError(e))}}
+function applyRemote(remote){if(remote.recurringIncomes){recurringIncomes=remote.recurringIncomes;localStorage.setItem('money-note-income-v2',JSON.stringify(recurringIncomes))}if(remote.fixedCosts){fixedCosts=remote.fixedCosts;localStorage.setItem('money-note-fixed-v2',JSON.stringify(fixedCosts))}Object.entries(remote.months||{}).forEach(([m,v])=>localStorage.setItem(`money-note-v2-${m}`,JSON.stringify(v)));data=readJSON(localKey(),fresh());renderAll()}
+function scheduleCloudSave(){if(!cloud.user||!cloud.db)return;clearTimeout(cloud.saveTimer);cloud.saveTimer=setTimeout(async()=>{try{const {doc,setDoc,serverTimestamp}=cloud.mods;await setDoc(doc(cloud.db,'users',cloud.user.uid),{recurringIncomes,fixedCosts,months:collectMonths(),updatedAt:serverTimestamp()},{merge:true});syncText.textContent='同期済み'}catch(e){syncText.textContent='同期エラー';console.error(e)}finally{cloud.saveTimer=null}},700)}
 load();initFirebase();
 </script></body></html>
